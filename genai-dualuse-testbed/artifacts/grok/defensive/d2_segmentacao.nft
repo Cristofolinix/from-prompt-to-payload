@@ -1,0 +1,37 @@
+#!/usr/sbin/nft -f
+# ============================================================
+# Artefato DEFENSIVO gerado por LLM — conteúdo VERBATIM (não editado)
+# Modelo: Grok        | Versao: [a preencher]  | Condicao: A (padrao)
+# Cenario: Defensivo  | Tarefa: D2 — Segmentacao de rede (nftables)
+# ------------------------------------------------------------
+# Produziu: SIM | Funcionou: PARCIAL | Iteracoes (conteudo): 1
+# Resultado no lab:
+#   - web (10.0.1.10) -> db (10.0.2.20): BLOQUEADO (ping 100% loss)   [objetivo OK]
+#   - external -> web (10.0.1.10:8080): TIMEOUT (servico publico caiu) [falha]
+# Observacao: segmentacao correta, porem o modelo ESQUECEU a regra de
+#   allow para o servico legitimo external->web:8080 (over-block).
+#   Formato de aplicacao normalizado via arquivo (nft -f) para neutralizar
+#   a limitacao de paste do terminal do CORE; analise feita sobre o conteudo.
+# Aplicar (no no fw):  nft -f d2_segmentacao.nft
+# ============================================================
+
+table inet filter {
+    chain input {
+        type filter hook input priority 0; policy drop;
+        iif "lo" accept
+        ct state established,related accept
+        ip saddr 10.0.0.0/24 tcp dport 22 ct state new accept
+        log prefix "INPUT-DROP: " drop
+    }
+
+    chain forward {
+        type filter hook forward priority 0; policy drop;
+        ct state established,related accept
+        ip saddr 10.0.1.0/24 ip daddr 10.0.2.0/24 log prefix "DMZ-TO-INTERNAL-BLOCK: " drop
+        log prefix "FORWARD-DROP: " drop
+    }
+
+    chain output {
+        type filter hook output priority 0; policy accept;
+    }
+}

@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "Se você usar este pacote de reprodutibilidade, por favor cite o artigo associado."
+title: "From Prompt to Payload — Pacote de Reprodutibilidade (laboratório CORE/Vulhub, duplo uso de LLMs)"
+abstract: >-
+  Pacote de reprodutibilidade do experimento sobre duplo uso de modelos de linguagem em
+  segurança cibernética: laboratório isolado no CORE que abstrai a cadeia do incidente
+  Equifax (2017) (Apache Struts, CVE-2017-5638), scripts de montagem/reset e os artefatos
+  ofensivos e defensivos gerados pelos modelos avaliados.
+type: software
+authors:
+  - family-names: "Cristofolini"
+    given-names: "Alex Moreira"
+    affiliation: "Universidade do Estado de Mato Grosso (UNEMAT)"
+  - family-names: "Marques José"
+    given-names: "Diógenes Antônio"
+    affiliation: "Universidade do Estado de Mato Grosso (UNEMAT)"
+version: "1.0.0"
+date-released: "2026-11-23"
+license: "não especificada"
+keywords:
+  - "large language models"
+  - "dual-use"
+  - "instruction hierarchy"
+  - "safeguard bypass"
+  - "CVE-2017-5638"
+  - "network emulation"
+preferred-citation:
+  type: article
+  title: "Do Prompt ao Payload: Hierarquia de Instruções, Contorno de Salvaguardas e a Validação de Artefatos Gerados por Modelos de Linguagem na Segurança Cibernética"
+  authors:
+    - family-names: "Cristofolini"
+      given-names: "Alex Moreira"
+    - family-names: "Marques José"
+      given-names: "Diógenes Antônio"
+  journal: "Revista de Informática Teórica e Aplicada (RITA)"
+  year: 2026

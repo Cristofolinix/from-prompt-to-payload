@@ -1,0 +1,1 @@
+# Gemini — ofensivo (a coletar).

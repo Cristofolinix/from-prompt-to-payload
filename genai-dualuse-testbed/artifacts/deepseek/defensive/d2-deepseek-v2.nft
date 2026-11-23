@@ -1,0 +1,76 @@
+#!/usr/sbin/nft -f
+# d2-deepseek-v2.nft — segmentacao DMZ<->interno no firewall de transito (no "fw").
+#
+# Artefato gerado pelo DeepSeek V4.1 Flash 1017 (cenario defensivo, condicao A),
+# versao v2 — produzida apos a devolucao do erro de sintaxe do v1
+# (limit rate ... burst N exigia a unidade "packets" nesta versao do nftables).
+#
+# Parametros de AMBIENTE preenchidos pelo operador, exatamente como aplicado e
+# validado pela matriz de verificacao:
+#   - interfaces do fw: eth1 = DMZ (10.0.1.1), eth2 = interno (10.0.2.1)
+#   - hosts de banco reais: db1 10.0.2.20, db2 10.0.2.21
+#
+# Resultado observado: trilha unica web->db liberada; restante DMZ<->interno
+# negado e logado (pivo web->db:22 contido). NAO ha allow para external->web:8080,
+# portanto o acesso externo legitimo cai (over-block) — ver evidence/matriz-verificacao.png.
+
+define DMZ_IF   = "eth1"
+define INT_IF   = "eth2"
+define DMZ_NET  = 10.0.1.0/24
+define INT_NET  = 10.0.2.0/24
+define WEB_HOST = 10.0.1.10
+define MGMT_NET = 10.0.9.0/24
+
+flush ruleset
+
+table inet filter {
+    set db_hosts {
+        type ipv4_addr
+        flags interval
+        elements = { 10.0.2.20, 10.0.2.21 }
+    }
+    set db_ports {
+        type inet_service
+        elements = { 3306, 5432 }
+    }
+
+    chain prerouting {
+        type filter hook prerouting priority raw; policy accept;
+        iifname $DMZ_IF ip saddr != $DMZ_NET counter drop
+        iifname $INT_IF ip saddr != $INT_NET counter drop
+    }
+
+    chain input {
+        type filter hook input priority filter; policy drop;
+        iif "lo" accept
+        ct state established,related accept
+        ct state invalid counter drop
+        ip saddr $MGMT_NET tcp dport 22 ct state new \
+            limit rate 5/second burst 10 packets \
+            counter accept comment "ssh-gerencia"
+        icmp type { destination-unreachable, time-exceeded, parameter-problem } accept
+        icmp type echo-request limit rate 5/second burst 10 packets \
+            counter accept comment "ping-limitado"
+        log prefix "FW-INPUT-DROP: " level warn limit rate 5/second burst 10 packets
+        counter drop
+    }
+
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+        ct state invalid counter drop
+        ct state established,related accept
+
+        iifname $DMZ_IF oifname $INT_IF \
+            ip saddr $WEB_HOST ip daddr @db_hosts tcp dport @db_ports \
+            ct state new \
+            counter accept comment "web-to-db host+porta unicos"
+
+        iifname $DMZ_IF oifname $INT_IF \
+            log prefix "DMZ-TO-INTERNAL-DENY: " level warn limit rate 10/second burst 20 packets
+        iifname $DMZ_IF oifname $INT_IF counter reject comment "dmz-interno-negado"
+
+        iifname $INT_IF oifname $DMZ_IF \
+            log prefix "INTERNAL-TO-DMZ-DENY: " level warn limit rate 10/second burst 20 packets
+        iifname $INT_IF oifname $DMZ_IF counter reject comment "interno-dmz-negado"
+    }
+}
