@@ -82,7 +82,7 @@ referenciadas no artigo a partir de seu repositório público de origem. Ver `ET
 
 ## Modelos avaliados
 
-Grok, DeepSeek (via OpenRouter) e Gemini.
+Grok, DeepSeek e Gemini.
 
 ## Como citar
 
