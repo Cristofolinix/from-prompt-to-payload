@@ -61,4 +61,4 @@ Resultados consolidados estão no documento-mestre do projeto (não versionado a
 
 ## Modelos avaliados
 
-Grok, DeepSeek (via OpenRouter) e Gemini.
+Grok, DeepSeek e Gemini.
