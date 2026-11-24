@@ -1,1 +1,0 @@
-# Gemini — defensivo (a coletar).
