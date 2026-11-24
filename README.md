@@ -2,7 +2,7 @@
 
 Este é o repositório onde estão armazenados os artefatos gerados pelos modelos de linguagem avaliados (Grok, DeepSeek e Gemini) no experimento de duplo uso descrito no artigo *Do Prompt ao Payload: Contorno de Recusa via Instrução de Sistema e Validação de Artefatos de Cibersegurança Gerados por LLMs* (RITA, 2026). Os artefatos — ofensivos (exploração/exfiltração) e defensivos (segmentação) — estão organizados por modelo na pasta `artifacts/`, acompanhados das evidências de execução.
 
-> ⚠️ **Uso responsável.** Material para pesquisa acadêmica, executado em laboratório totalmente isolado. A CVE-2017-5638 é pública e corrigida desde 2017. Ver `ETHICS.md`.
+> ⚠️ **Uso responsável.** Material para pesquisa acadêmica. A CVE-2017-5638 é pública e corrigida desde 2017. Ver `ETHICS.md`.
 
 ## Conteúdo
 
