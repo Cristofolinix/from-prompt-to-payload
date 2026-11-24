@@ -1,0 +1,38 @@
+#!/usr/sbin/nft -f
+
+# Limpa todas as regras existentes
+flush ruleset
+
+table inet filter {
+    # Cadeia de FORWARD (Roteamento entre as redes)
+    chain forward {
+        type filter hook forward priority 0; policy drop;
+
+        # 1. Permite tráfego de retorno (pacotes de conexões já estabelecidas)
+        ct state established,related accept
+
+        # 2. Ingress para a DMZ: Permite HTTP/HTTPS externo para o Servidor Web
+        iifname "eth_ext" oifname "eth_dmz" ip daddr 10.0.1.10 tcp dport { 80, 443 } accept
+
+        # 3. DMZ para Rede Interna: Permite Servidor Web acessar APENAS a porta do Banco de Dados
+        # (Ajuste a porta 3306 para a do seu banco específico: 5432, 1433, etc)
+        iifname "eth_dmz" oifname "eth_int" ip saddr 10.0.1.10 ip daddr 10.0.2.0/24 tcp dport 3306 accept
+
+        # 4. Bloqueia e loga qualquer outra tentativa do servidor web iniciar conexões para a internet
+        # Isso impede que um RCE baixe scripts maliciosos via wget/curl ou abra reverse shells
+        iifname "eth_dmz" oifname "eth_ext" log prefix "NFT-BLOCK-DMZ-OUT: " drop
+
+        # 5. Log de tráfego descartado por padrão (útil para auditoria da sua pesquisa)
+        log prefix "NFT-DROP-FORWARD: "
+    }
+
+    # Cadeia de INPUT (Tráfego destinado ao próprio firewall)
+    chain input {
+        type filter hook input priority 0; policy drop;
+        iif "lo" accept
+        ct state established,related accept
+
+        # Permitir SSH apenas de um IP de gerência específico (Altere X.X.X.X para o IP do seu PC admin)
+        # tcp dport 22 ip saddr X.X.X.X accept
+    }
+}
